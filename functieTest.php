@@ -8,9 +8,16 @@
 
 namespace home;
 
+use Elasticsearch\ClientBuilder;
+
+function print_pre ($object){ //weghalen
+    echo '<pre>';
+    print_r($object);
+    echo '</pre>';
+}
 
 require 'vendor/autoload.php';
-require_once 'functie.php';
+require_once 'SKOS_Transformer.php';
 
 
 class FunctieTest extends \PHPUnit_Framework_TestCase {
@@ -18,15 +25,31 @@ class FunctieTest extends \PHPUnit_Framework_TestCase {
 
     public function testPushAndPop()
     {
-        $stack = [];
-        $this->assertEquals(0, count($stack));
+        $client = ClientBuilder::create()->build();
 
-        array_push($stack, 'foo');
-        $this->assertEquals('foo', $stack[count($stack)-1]);
-        $this->assertEquals(1, count($stack));
 
-        $this->assertEquals('foo', array_pop($stack));
-        $this->assertEquals(0, count($stack));
+        $params = [
+            'index' => 'hzbwnature',
+            'type' => 'attachment',
+            ];
+
+// Get doc at /my_index/my_type/my_id
+        $documents = $client->mtermvectors($params)['docs'];
+
+
+        $skostermen = array_map('str_getcsv', file('skos.csv'));
+
+        $functie = new Functie();
+
+        $resultaat = $functie->documentloop();
+
+        print_pre($resultaat);
+
+        $this->assertArrayHasKey($resultaat,'dijk,boot');
+
+        $this->assertArrayHasKey($resultaat,'dijk,boot');
+
+
     }
 
 
